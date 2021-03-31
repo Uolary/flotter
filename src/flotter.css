@@ -1,5 +1,96 @@
-.flotter {
-    margin: 0;
+.flotter-wrap {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    background-image: url("https://s3-us-west-2.amazonaws.com/s.cdpn.io/25381/tumblr_mufr0mmWYW1st5lhmo1_1280.jpg");
+    min-width: 320px;
+    box-sizing: border-box;
+}
+
+.content-popup {
+    margin: 0 auto;
+}
+
+.content-popup__rectangle {
+    width: 20%;
+    min-width: 100px;
+    height: 9px;
+    background-color: #FFDF37;
+    margin: 0 auto;
+}
+
+.content-popup__title {
+    font-family: "Tiempos Fine bold", serif;
+    font-size: 50px;
+    line-height: 60px;
+    text-align: center;
+    letter-spacing: 0.27px;
+    color: #FFFFFF;
+    max-width: 940px;
+    box-sizing: border-box;
+    margin: 30px auto;
+    padding: 0 20px;
+}
+
+.content-popup__title_quentin-text {
+    font-family: "Quentin", serif;
+    font-size: 70px;
+    line-height: 60px;
+    letter-spacing: 0.27px;
+    margin-left: 15px;
+}
+
+.content-popup__watch-now {
+    display: block;
+    background: inherit;
     padding: 0;
-    transform: rotate(50deg);
+    border: none;
+    margin: 0 auto;
+    cursor: pointer;
+}
+
+.popup {
+    z-index: 2;
+    position: fixed;
+    height: 100vh;
+    width: 100vw;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    display: none;
+}
+
+.popup__background_dark {
+    position: absolute;
+    width: 100%;
+    top: 0;
+    bottom: 0;
+    background: #000;
+    z-index: -1;
+    opacity: 0.5;
+}
+
+.player {
+    width: 90%;
+    height: 85%;
+    position: relative;
+}
+
+.popup-close {
+    color: #E5E5E5;
+    cursor: pointer;
+    margin-bottom: 5px;
+    background: inherit;
+    border: none;
+    padding: 2px;
+    position: absolute;
+    right: 0;
+    top: -25px;
+    font-size: 16px;
+}
+
+iframe {
+    width: 100%;
+    height: 100%;
 }
