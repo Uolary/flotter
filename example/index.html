@@ -7,6 +7,24 @@
     <title>Flotter</title>
   </head>
   <body>
+    <div class="flotter-popup"></div>
 
+    <script src="flotter.js"></script>
+    <script>
+      (function () {
+        const element = document.querySelector('.flotter-popup');
+
+        flotter.init(element, {
+          onInit: function () {
+            console.log('Init popup in', element);
+          },
+          youtubeUrl: 'https://www.youtube.com/watch?v=X2xxYxEFkwE&ab_channel=Mernes',
+          backgroundImage: 'https://s3-us-west-2.amazonaws.com/s.cdpn.io/25381/tumblr_mufr0mmWYW1st5lhmo1_1280.jpg',
+          titleText: 'Digestion is the key to overall wellness in Body, Mind and Spirit'
+        });
+
+        console.log(flotter.instances);
+      })();
+    </script>
   </body>
 </html>
