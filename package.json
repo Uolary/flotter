@@ -1,10 +1,12 @@
 {
-  "name": "flotter.js",
+  "name": "flotter",
   "version": "0.1.1",
   "description": "",
   "main": "dist/flotter.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "cross-env NODE_ENV=development webpack-dev-server --no-inline --watch-content-base",
+    "build": "cross-env NODE_ENV=production webpack --production && webpack",
+    "lint": "eslint src/flotter.js"
   },
   "author": {
     "name": "Ivan Nasanovich"
@@ -38,5 +40,8 @@
     "webpack": "^4.29.0",
     "webpack-cli": "^3.2.1",
     "webpack-dev-server": "^3.1.14"
-  }
+  },
+  "pre-commit": [
+    "lint"
+  ]
 }
