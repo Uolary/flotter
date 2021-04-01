@@ -1,6 +1,6 @@
 import './flotter.css';
 
-const pluginName = 'flotter';
+const libraryName = 'flotter';
 const contentPopupClassName = 'content-popup';
 const popupClassName = 'popup';
 const defaultOptions = {
@@ -14,10 +14,13 @@ const defaultOptions = {
 
 export default class Flotter {
   constructor(element, userOptions) {
+    this.rootDocument = document;
     this.element = element;
     this.options = this._simpleOptions(defaultOptions, userOptions);
     this.onInit = this.options.onInit;
+    this.isPopupOpen = false;
     this.watchNowBtn = this._createWatchNowBtn();
+    this.closePopupBtn = this._createPopupCloseBtn();
     this.popupContent = this._createContentPopup();
     this.popup = this._createPopup();
     this.container = this._createContainer();
@@ -26,6 +29,7 @@ export default class Flotter {
 
     this._insertWrapPopup();
     this._addEventOpenPopup();
+    this._addEventCLosePopup();
 
     this._init();
   }
@@ -41,12 +45,12 @@ export default class Flotter {
   }
 
   static createInstance(element, userOptions) {
-    let data = element[pluginName];
+    let data = element[libraryName];
 
     // Create a new instance.
     if (!data) {
       data = new Flotter(element, userOptions);
-      element[pluginName] = data;
+      element[libraryName] = data;
     }
   }
 
@@ -161,7 +165,6 @@ export default class Flotter {
 
   _createPlayer() {
     const player = document.createElement('div');
-    const closeBtn = document.createElement('button');
     const iframeYoutube = document.createElement('iframe');
     const initialUrlYouTube = 'https://www.youtube.com/embed/';
     const userYouTubeUrl = new URL(this.options.youtubeUrl);
@@ -170,22 +173,28 @@ export default class Flotter {
 
     player.classList.add('player');
 
-    closeBtn.classList.add('popup-close');
-    closeBtn.setAttribute('type', 'button');
-    closeBtn.setAttribute('title', 'Close popup');
-    closeBtn.setAttribute('aria-label', 'Close');
-    closeBtn.insertAdjacentText('beforeend', '✖');
-
     iframeYoutube.setAttribute('title', 'YouTube video player');
     iframeYoutube.setAttribute('frameborder', '0');
     iframeYoutube.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture');
     iframeYoutube.setAttribute('allowfullscreen', '');
     iframeYoutube.setAttribute('src', `${initialUrlYouTube}${urlParams.get('v')}`);
 
-    player.insertAdjacentElement('beforeend', closeBtn);
+    player.insertAdjacentElement('beforeend', this.closePopupBtn);
     player.insertAdjacentElement('beforeend', iframeYoutube);
 
     return player;
+  }
+
+  _createPopupCloseBtn() {
+    const closeBtn = document.createElement('button');
+
+    closeBtn.classList.add('popup-close');
+    closeBtn.setAttribute('type', 'button');
+    closeBtn.setAttribute('title', 'Close popup');
+    closeBtn.setAttribute('aria-label', 'Close');
+    closeBtn.insertAdjacentText('beforeend', '✖');
+
+    return closeBtn;
   }
 
   _insertWrapPopup() {
@@ -194,10 +203,29 @@ export default class Flotter {
 
   _addEventOpenPopup() {
     this.watchNowBtn.addEventListener('click', () => {
-      this.popup.classList.add(`${popupClassName}_open`);
-      this.popup.setAttribute('aria-hidden', 'false');
-      this.popupContent.setAttribute('aria-hidden', 'true');
+      this._togglePopUp(true);
     });
+  }
+
+  _addEventCLosePopup() {
+    this.closePopupBtn.addEventListener('click', () => {
+      this._togglePopUp(false);
+    });
+
+    this.rootDocument.addEventListener('keydown', (event) => {
+      if ('key' in event && this.isPopupOpen) {
+        if (event.key === 'Escape') {
+          this._togglePopUp(false);
+        }
+      }
+    });
+  }
+
+  _togglePopUp(isOpen) {
+    this.isPopupOpen = isOpen;
+    this.popup.classList.toggle(`${popupClassName}_open`);
+    this.popup.setAttribute('aria-hidden', String(!isOpen));
+    this.popupContent.setAttribute('aria-hidden', String(isOpen));
   }
 
   _init() {
