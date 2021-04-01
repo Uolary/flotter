@@ -6,8 +6,6 @@ const popupClassName = 'popup';
 const defaultOptions = {
   className: 'flotter-wrap',
   disableClassName: 'flotter_disable',
-  openPopUpClassName: 'flotter_open',
-  startEvent: ['mousedown', 'touchstart', 'pointerdown'],
   youtubeUrl: null,
   backgroundImage: null,
   titleText: '',
@@ -19,6 +17,7 @@ export default class Flotter {
     this.element = element;
     this.options = this._simpleOptions(defaultOptions, userOptions);
     this.onInit = this.options.onInit;
+    this.watchNowBtn = this._createWatchNowBtn();
     this.popupContent = this._createContentPopup();
     this.popup = this._createPopup();
     this.container = this._createContainer();
@@ -26,6 +25,7 @@ export default class Flotter {
     Flotter.instances.push(this);
 
     this._insertWrapPopup();
+    this._addEventOpenPopup();
 
     this._init();
   }
@@ -92,7 +92,7 @@ export default class Flotter {
     const childElements = [
       this._createRectangle(),
       this._createTitle(),
-      this._createWatchNowBtn()
+      this.watchNowBtn
     ];
 
     contentPopup.setAttribute('class', contentPopupClassName);
@@ -190,6 +190,14 @@ export default class Flotter {
 
   _insertWrapPopup() {
     this.element.insertAdjacentElement('beforeend', this.container);
+  }
+
+  _addEventOpenPopup() {
+    this.watchNowBtn.addEventListener('click', () => {
+      this.popup.classList.add(`${popupClassName}_open`);
+      this.popup.setAttribute('aria-hidden', 'false');
+      this.popupContent.setAttribute('aria-hidden', 'true');
+    });
   }
 
   _init() {

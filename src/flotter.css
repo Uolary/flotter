@@ -66,11 +66,14 @@
     position: fixed;
     height: 100vh;
     width: 100vw;
-    display: flex;
     justify-content: center;
     align-items: center;
     display: none;
     top: 0;
+}
+
+.popup_open {
+    display: flex;
 }
 
 .popup__background_dark {
