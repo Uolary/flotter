@@ -14,11 +14,10 @@ const defaultOptions = {
 
 export default class Flotter {
   constructor(element, userOptions) {
-    this.rootDocument = document;
+    this.id = `flotter-${new Date().valueOf()}`;
     this.element = element;
     this.options = this._simpleOptions(defaultOptions, userOptions);
     this.onInit = this.options.onInit;
-    this.isPopupOpen = false;
     this.watchNowBtn = this._createWatchNowBtn();
     this.closePopupBtn = this._createPopupCloseBtn();
     this.popupContent = this._createContentPopup();
@@ -28,19 +27,33 @@ export default class Flotter {
     Flotter.instances.push(this);
 
     this._insertWrapPopup();
-    this._addEventOpenPopup();
-    this._addEventCLosePopup();
 
     this._init();
   }
 
   static init(element, userOptions) {
-    if (element.length) {
-      Array.prototype.slice.call(element).forEach((el) => {
-        this.createInstance(el, userOptions);
-      });
-    } else {
-      this.createInstance(element, userOptions);
+    this.createInstance(element, userOptions);
+
+    if (!Flotter.eventsActivated) {
+      Flotter.eventsActivated = true
+      this.addEvents();
+    }
+  }
+
+  static destroy(element) {
+    const elementId = element.id;
+
+    Flotter.instances = Flotter.instances.filter((instance) => {
+      if (instance.id === elementId) {
+        element.removeAttribute('id');
+        element.removeChild(instance.container);
+      } else {
+        return true;
+      }
+    });
+    if (!Flotter.instances.length) {
+      Flotter.eventsActivated = false;
+      this.removeEvents();
     }
   }
 
@@ -51,6 +64,51 @@ export default class Flotter {
     if (!data) {
       data = new Flotter(element, userOptions);
       element[libraryName] = data;
+    }
+  }
+
+  static addEvents() {
+    document.addEventListener('click', this.eventDocumentClick);
+    document.addEventListener('keyup', this.eventDocumentKeyUp);
+  }
+
+  static removeEvents() {
+    document.removeEventListener('click', this.eventDocumentClick);
+    document.removeEventListener('keyup', this.eventDocumentKeyUp);
+  }
+
+  static eventDocumentClick(event) {
+    const target = event.target;
+    const ancestor = target.closest('[id^="flotter-"]');
+
+    if (ancestor) {
+      const targetAncestor = document.querySelector(`#${ancestor.id}`);
+      const popupBlock = targetAncestor.querySelector(`.${popupClassName}`);
+      const watchNowBtnSelector = `.${contentPopupClassName}__watch-now`;
+      const closePopupBtnSelector = `.${popupClassName}-close`;
+      const popUpOpenClassName = `${popupClassName}_open`;
+      if (target.closest(watchNowBtnSelector)) {
+        popupBlock.classList.add(popUpOpenClassName);
+      }
+
+      if (target.closest(closePopupBtnSelector)) {
+        popupBlock.classList.remove(popUpOpenClassName);
+      }
+    }
+  }
+
+  static eventDocumentKeyUp(event) {
+    const popupBlocks = document.querySelectorAll(`.${popupClassName}`);
+    const popUpOpenClassName = `${popupClassName}_open`;
+
+    if ('key' in event) {
+      if (event.key === 'Escape') {
+        popupBlocks.forEach((block) => {
+          if (block.classList.contains(popUpOpenClassName)) {
+            block.classList.remove(popUpOpenClassName);
+          }
+        });
+      }
     }
   }
 
@@ -198,34 +256,8 @@ export default class Flotter {
   }
 
   _insertWrapPopup() {
+    this.element.setAttribute('id', this.id);
     this.element.insertAdjacentElement('beforeend', this.container);
-  }
-
-  _addEventOpenPopup() {
-    this.watchNowBtn.addEventListener('click', () => {
-      this._togglePopUp(true);
-    });
-  }
-
-  _addEventCLosePopup() {
-    this.closePopupBtn.addEventListener('click', () => {
-      this._togglePopUp(false);
-    });
-
-    this.rootDocument.addEventListener('keydown', (event) => {
-      if ('key' in event && this.isPopupOpen) {
-        if (event.key === 'Escape') {
-          this._togglePopUp(false);
-        }
-      }
-    });
-  }
-
-  _togglePopUp(isOpen) {
-    this.isPopupOpen = isOpen;
-    this.popup.classList.toggle(`${popupClassName}_open`);
-    this.popup.setAttribute('aria-hidden', String(!isOpen));
-    this.popupContent.setAttribute('aria-hidden', String(isOpen));
   }
 
   _init() {
@@ -237,3 +269,4 @@ export default class Flotter {
 
 Flotter.version = VERSION;
 Flotter.instances = [];
+Flotter.eventsActivated = false;

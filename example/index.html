@@ -14,12 +14,29 @@
     </style>
   </head>
   <body>
-    <div class="flotter-popup"></div>
+    <div class="flotter-popup"> <button>Click destroy</button></div>
+    <div class="flotter-popup-2"></div>
+
 
     <script src="flotter.js"></script>
     <script>
       (function () {
         const element = document.querySelector('.flotter-popup');
+        const element2 = document.querySelector('.flotter-popup-2');
+        const destroyBtn = document.querySelector('button');
+
+        destroyBtn.addEventListener('click', () => {
+          flotter.destroy(element);
+        });
+
+        flotter.init(element2, {
+          onInit: function () {
+            console.log('Init popup in', element);
+          },
+          youtubeUrl: 'https://www.youtube.com/watch?v=9nY017sy55Y',
+          backgroundImage: '/background.jpg',
+          titleText: 'Digestion is <quentin>the key</quentin> to overall wellness in Body, Mind and Spirit'
+        });
 
         flotter.init(element, {
           onInit: function () {
