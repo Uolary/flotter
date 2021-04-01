@@ -2,6 +2,7 @@ import './flotter.css';
 
 const pluginName = 'flotter';
 const contentPopupClassName = 'content-popup';
+const popupClassName = 'popup';
 const defaultOptions = {
   className: 'flotter-wrap',
   disableClassName: 'flotter_disable',
@@ -18,11 +19,11 @@ export default class Flotter {
     this.element = element;
     this.options = this._simpleOptions(defaultOptions, userOptions);
     this.onInit = this.options.onInit;
+    this.popupContent = this._createContentPopup();
+    this.container = this._createContainer();
+    this.popup = this._createPopup();
 
     Flotter.instances.push(this);
-
-    this.popup = this._createContentPopup();
-    this.container = this._createContainer();
 
     this._insertWrapPopup();
 
@@ -47,7 +48,7 @@ export default class Flotter {
       data = new Flotter(element, userOptions);
       element[pluginName] = data;
     }
-  };
+  }
 
   /* private methods */
 
@@ -73,16 +74,16 @@ export default class Flotter {
     }
 
     return opt;
-  };
+  }
 
   _createContainer() {
     const container = document.createElement('div');
     container.setAttribute('class', this.options.className);
 
-    container.insertAdjacentElement('beforeend', this.popup);
+    container.insertAdjacentElement('beforeend', this.popupContent);
 
     return container;
-  };
+  }
 
   _createContentPopup() {
     const contentPopup = document.createElement('div');
@@ -100,14 +101,14 @@ export default class Flotter {
     });
 
     return contentPopup;
-  };
+  }
 
   _createRectangle() {
     const rectangle = document.createElement('div');
     rectangle.classList.add(`${contentPopupClassName}__rectangle`);
 
     return rectangle;
-  };
+  }
 
   _createTitle() {
     const title = document.createElement('div');
@@ -115,7 +116,7 @@ export default class Flotter {
     title.insertAdjacentText('beforeend', this.options.titleText);
 
     return title;
-  };
+  }
 
   _createWatchNowBtn() {
     const svg = `
@@ -130,17 +131,67 @@ export default class Flotter {
     button.insertAdjacentHTML('beforeend', svg);
 
     return button;
-  };
+  }
+
+  _createPopup() {
+    const popup = document.createElement('div');
+    popup.classList.add(popupClassName);
+
+    popup.setAttribute('aria-hidden', 'true');
+    popup.setAttribute('role', 'dialog');
+
+    popup.insertAdjacentElement('beforeend', this._createBackgroundDark());
+    popup.insertAdjacentElement('beforeend', this._createPlayer());
+
+    return popup;
+  }
+
+  _createBackgroundDark() {
+    const backgroundDark = document.createElement('div');
+    backgroundDark.classList.add(`${popupClassName}__background_dark`);
+
+    return backgroundDark;
+  }
+
+  _createPlayer() {
+    const player = document.createElement('div');
+    const closeBtn = document.createElement('button');
+    const iframeYoutube = document.createElement('iframe');
+    const initialUrlYouTube = 'https://www.youtube.com/embed/';
+    const userYouTubeUrl = new URL(this.options.youtubeUrl);
+    const urlSearch = userYouTubeUrl.search;
+    const urlParams = new URLSearchParams(urlSearch);
+
+    player.classList.add('player');
+
+    closeBtn.classList.add('popup-close');
+    closeBtn.setAttribute('type', 'button');
+    closeBtn.setAttribute('title', 'Close popup');
+    closeBtn.setAttribute('aria-label', 'Close');
+    closeBtn.insertAdjacentText('beforeend', '✖');
+
+    iframeYoutube.setAttribute('title', 'YouTube video player');
+    iframeYoutube.setAttribute('frameborder', '0');
+    iframeYoutube.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture');
+    iframeYoutube.setAttribute('allowfullscreen', '');
+    iframeYoutube.setAttribute('src', `${initialUrlYouTube}${urlParams.get('v')}`);
+
+    player.insertAdjacentElement('beforeend', closeBtn);
+    player.insertAdjacentElement('beforeend', iframeYoutube);
+
+    return player;
+  }
 
   _insertWrapPopup() {
     this.element.insertAdjacentElement('beforeend', this.container);
-  };
+    this.element.insertAdjacentElement('beforeend', this.popup);
+  }
 
   _init() {
     if (this.onInit && typeof this.onInit === 'function') {
       this.onInit();
     }
-  };
+  }
 }
 
 Flotter.version = VERSION;
