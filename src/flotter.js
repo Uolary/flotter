@@ -5,11 +5,9 @@ const contentPopupClassName = 'content-popup';
 const popupClassName = 'popup';
 const defaultOptions = {
   className: 'flotter-wrap',
-  disableClassName: 'flotter_disable',
   youtubeUrl: null,
   backgroundImage: null,
-  titleText: '',
-  quentinText: ''
+  titleText: ''
 };
 
 export default class Flotter {
@@ -245,12 +243,15 @@ export default class Flotter {
 
   _createPopupCloseBtn() {
     const closeBtn = document.createElement('button');
+    const iconClose = document.createElement('span');
 
     closeBtn.classList.add('popup-close');
     closeBtn.setAttribute('type', 'button');
     closeBtn.setAttribute('title', 'Close popup');
     closeBtn.setAttribute('aria-label', 'Close');
-    closeBtn.insertAdjacentText('beforeend', '✖');
+
+    iconClose.classList.add(`${popupClassName}-close__icon`);
+    closeBtn.insertAdjacentElement('beforeend', iconClose);
 
     return closeBtn;
   }
