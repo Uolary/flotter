@@ -111,9 +111,13 @@ export default class Flotter {
   }
 
   _createTitle() {
+    const htmlTitle = this.options.titleText
+      .replace('<quentin>', `<span class="${contentPopupClassName}__title_quentin-text">`)
+      .replace('</quentin>', '</span>');
+
     const title = document.createElement('div');
     title.classList.add(`${contentPopupClassName}__title`);
-    title.insertAdjacentText('beforeend', this.options.titleText);
+    title.insertAdjacentHTML('beforeend', htmlTitle);
 
     return title;
   }
