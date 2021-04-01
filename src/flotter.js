@@ -20,8 +20,8 @@ export default class Flotter {
     this.options = this._simpleOptions(defaultOptions, userOptions);
     this.onInit = this.options.onInit;
     this.popupContent = this._createContentPopup();
-    this.container = this._createContainer();
     this.popup = this._createPopup();
+    this.container = this._createContainer();
 
     Flotter.instances.push(this);
 
@@ -79,8 +79,10 @@ export default class Flotter {
   _createContainer() {
     const container = document.createElement('div');
     container.setAttribute('class', this.options.className);
+    container.style.backgroundImage = `url(${this.options.backgroundImage})`;
 
     container.insertAdjacentElement('beforeend', this.popupContent);
+    container.insertAdjacentElement('beforeend', this.popup);
 
     return container;
   }
@@ -188,7 +190,6 @@ export default class Flotter {
 
   _insertWrapPopup() {
     this.element.insertAdjacentElement('beforeend', this.container);
-    this.element.insertAdjacentElement('beforeend', this.popup);
   }
 
   _init() {
