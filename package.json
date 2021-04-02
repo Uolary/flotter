@@ -1,6 +1,6 @@
 {
   "name": "flotter",
-  "version": "0.1.1",
+  "version": "1.0.0",
   "description": "",
   "main": "dist/flotter.js",
   "scripts": {
