@@ -49,10 +49,13 @@ export default class Flotter {
         return true;
       }
     });
+
     if (!Flotter.instances.length) {
       Flotter.eventsActivated = false;
       this.removeEvents();
     }
+
+    Flotter.isOpenPopUp = false;
   }
 
   static createInstance(element, userOptions) {
@@ -68,11 +71,13 @@ export default class Flotter {
   static addEvents() {
     document.addEventListener('click', this.eventDocumentClick);
     document.addEventListener('keyup', this.eventDocumentKeyUp);
+    window.addEventListener('scroll', this.eventScroll);
   }
 
   static removeEvents() {
     document.removeEventListener('click', this.eventDocumentClick);
     document.removeEventListener('keyup', this.eventDocumentKeyUp);
+    window.removeEventListener('scroll', this.eventScroll);
   }
 
   static eventDocumentClick(event) {
@@ -87,26 +92,48 @@ export default class Flotter {
       const popUpOpenClassName = `${popupClassName}_open`;
       if (target.closest(watchNowBtnSelector)) {
         popupBlock.classList.add(popUpOpenClassName);
+        Flotter.windowSize = {
+          y: window.pageYOffset,
+          x: window.pageXOffset
+        };
+        Flotter.isOpenPopUp = true;
       }
 
       if (target.closest(closePopupBtnSelector)) {
         popupBlock.classList.remove(popUpOpenClassName);
+        Flotter.isOpenPopUp = false;
       }
     }
   }
 
   static eventDocumentKeyUp(event) {
+    const focusElement = document.activeElement;
     const popupBlocks = document.querySelectorAll(`.${popupClassName}`);
     const popUpOpenClassName = `${popupClassName}_open`;
+
+    if (!focusElement.closest(`.${popUpOpenClassName}`)) {
+      popupBlocks.forEach((block) => {
+        if (block.classList.contains(popUpOpenClassName)) {
+          block.querySelector(`.${popupClassName}-close`).focus();
+        }
+      });
+    }
 
     if ('key' in event) {
       if (event.key === 'Escape') {
         popupBlocks.forEach((block) => {
           if (block.classList.contains(popUpOpenClassName)) {
             block.classList.remove(popUpOpenClassName);
+            Flotter.isOpenPopUp = false;
           }
         });
       }
+    }
+  }
+
+  static eventScroll() {
+    if (Flotter.isOpenPopUp) {
+      window.scrollTo(Flotter.windowSize.x, Flotter.windowSize.y);
     }
   }
 
@@ -156,7 +183,6 @@ export default class Flotter {
     ];
 
     contentPopup.setAttribute('class', contentPopupClassName);
-    contentPopup.setAttribute('aria-hidden', 'false');
 
     childElements.forEach((element) => {
       contentPopup.insertAdjacentElement('beforeend', element);
@@ -203,7 +229,7 @@ export default class Flotter {
     const popup = document.createElement('div');
     popup.classList.add(popupClassName);
 
-    popup.setAttribute('aria-hidden', 'true');
+    popup.setAttribute('aria-modal', 'true');
     popup.setAttribute('role', 'dialog');
 
     popup.insertAdjacentElement('beforeend', this._createBackgroundDark());
@@ -271,3 +297,4 @@ export default class Flotter {
 Flotter.version = VERSION;
 Flotter.instances = [];
 Flotter.eventsActivated = false;
+Flotter.isOpenPopUp = false;
