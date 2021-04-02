@@ -25,6 +25,8 @@ const defaultOptions = {
 export default class Flotter {
   constructor(element, userOptions) {
     this.id = `flotter-${new Date().valueOf()}`;
+    this.offsetTop = 0;
+    this.loadBackground = false;
     this.element = element;
     this.options = this._simpleOptions(defaultOptions, userOptions);
     this.onInit = this.options.onInit;
@@ -84,12 +86,16 @@ export default class Flotter {
     document.addEventListener('click', this.eventDocumentClick);
     document.addEventListener('keyup', this.eventDocumentKeyUp);
     window.addEventListener('scroll', this.eventScroll);
+    window.addEventListener('resize', this.eventResize);
+    document.addEventListener('DOMContentLoaded', this.eventCheckBackground);
   }
 
   static removeEvents() {
     document.removeEventListener('click', this.eventDocumentClick);
     document.removeEventListener('keyup', this.eventDocumentKeyUp);
     window.removeEventListener('scroll', this.eventScroll);
+    window.removeEventListener('resize', this.eventResize);
+    document.removeEventListener('DOMContentLoaded', this.eventCheckBackground);
   }
 
   static eventDocumentClick(event) {
@@ -140,9 +146,28 @@ export default class Flotter {
   }
 
   static eventScroll() {
+    Flotter.eventCheckBackground();
+
     if (Flotter.isOpenPopUp) {
       window.scrollTo(Flotter.windowSize.x, Flotter.windowSize.y);
     }
+  }
+
+  static eventResize() {
+    Flotter.instances.forEach((instance) => {
+      instance.offsetTop = instance.element.getBoundingClientRect().top + document.body.scrollTop;
+    });
+  }
+
+  static eventCheckBackground() {
+    Flotter.instances.forEach((instance) => {
+      if (window.pageYOffset + (window.innerHeight / 2) > instance.offsetTop && !instance.loadBackground) {
+        const flotterWrap = document.querySelector(`#${instance.id}`).querySelector(`.${libraryName}`);
+        flotterWrap.style.backgroundImage = `url(${instance.options.backgroundImage})`;
+
+        instance.loadBackground = true;
+      }
+    });
   }
 
   /* private methods */
@@ -174,7 +199,6 @@ export default class Flotter {
   _createContainer() {
     const container = document.createElement('div');
     container.setAttribute('class', libraryName);
-    container.style.backgroundImage = `url(${this.options.backgroundImage})`;
 
     container.insertAdjacentElement('beforeend', this.popupContent);
     container.insertAdjacentElement('beforeend', this.popup);
@@ -299,6 +323,8 @@ export default class Flotter {
   _insertWrapPopup() {
     this.element.setAttribute('id', this.id);
     this.element.insertAdjacentElement('beforeend', this.container);
+
+    this.offsetTop = this.element.getBoundingClientRect().top + document.body.scrollTop;
   }
 
   _init() {
