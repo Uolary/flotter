@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flotter</title>
+    <link rel="stylesheet" href="flotter.css">
+    <style>
+      body {
+          margin: 0;
+          padding: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="popup-wrap"></div>
+    <div class="popup-wrap-2"></div>
+
+    <script src="flotter.js"></script>
+    <script>
+      (function () {
+        const popup = document.querySelector('.popup-wrap');
+        const popup2 = document.querySelector('.popup-wrap-2');
+
+        flotter.init(popup, {
+          onInit: function () {
+            console.log('Init popup in', popup);
+          },
+          youtubeUrl: 'https://www.youtube.com/watch?v=jpBJ9CUMjE8&ab_channel=DexModerr',
+          backgroundImage: '/background.jpg',
+          titleText: 'Digestion is <quentin>the key</quentin> to overall wellness in Body, Mind and Spirit'
+        });
+
+        flotter.init(popup2, {
+          onInit: function () {
+            console.log('Init popup2 in', popup2);
+          },
+          youtubeUrl: 'https://www.youtube.com/watch?v=t72nquFeCQQ',
+          backgroundImage: 'https://s3-us-west-2.amazonaws.com/s.cdpn.io/25381/tumblr_mufr0mmWYW1st5lhmo1_1280.jpg',
+          titleText: 'It is a long established fact that a reader by the readable content of a page when looking at its layout.'
+        });
+      })();
+    </script>
+  </body>
+</html>
