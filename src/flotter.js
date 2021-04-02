@@ -4,7 +4,6 @@ const libraryName = 'flotter';
 const libraryClassNames = {
   content: `${libraryName}__content`,
   popup: `${libraryName}__popup`,
-  popupOpen: `${libraryName}__popup_open`,
   rectangle: `${libraryName}__rectangle`,
   title: `${libraryName}__title`,
   quentin: `${libraryName}__title_quentin`,
@@ -12,6 +11,8 @@ const libraryClassNames = {
   backgroundDark: `${libraryName}__background_dark`,
   player: `${libraryName}__player`,
   iframePlayer: `${libraryName}__iframe-player`,
+  iframePlayerLoading: `${libraryName}__iframe-player_loading`,
+  preloaderVideo: `${libraryName}__preloader-video`,
   close: `${libraryName}-close`,
   closeIcon: `${libraryName}-close__icon`
 };
@@ -31,9 +32,7 @@ export default class Flotter {
     this.options = this._simpleOptions(defaultOptions, userOptions);
     this.onInit = this.options.onInit;
     this.watchNowBtn = this._createWatchNowBtn();
-    this.closePopupBtn = this._createPopupCloseBtn();
     this.popupContent = this._createContentPopup();
-    this.popup = this._createPopup();
     this.container = this._createContainer();
 
     Flotter.instances.push(this);
@@ -104,43 +103,106 @@ export default class Flotter {
 
     if (ancestor) {
       const targetAncestor = document.querySelector(`#${ancestor.id}`);
-      const popupBlock = targetAncestor.querySelector(`.${libraryClassNames.popup}`);
+
       if (target.closest(`.${libraryClassNames.watchNow}`)) {
-        popupBlock.classList.add(libraryClassNames.popupOpen);
         Flotter.windowSize = {
           y: window.pageYOffset,
           x: window.pageXOffset
         };
         Flotter.isOpenPopUp = true;
-      }
-
-      if (target.closest(`.${libraryClassNames.close}`)) {
-        popupBlock.classList.remove(libraryClassNames.popupOpen);
-        Flotter.isOpenPopUp = false;
+        document.body.insertAdjacentElement('beforeend', Flotter.createPopup(targetAncestor));
       }
     }
+
+    if (target.closest(`.${libraryClassNames.close}`)) {
+      Flotter.isOpenPopUp = false;
+      document.body.querySelector(`.${libraryClassNames.popup}`).remove();
+    }
+  }
+
+  static createPopup(element) {
+    const popup = document.createElement('div');
+    popup.classList.add(libraryClassNames.popup);
+
+    popup.setAttribute('aria-modal', 'true');
+    popup.setAttribute('role', 'dialog');
+
+    popup.insertAdjacentElement('beforeend', this.createBackgroundDark());
+    popup.insertAdjacentElement('beforeend', this.createPlayer(element));
+
+    return popup;
+  }
+
+  static createPlayer(element) {
+    const player = document.createElement('div');
+    const iframeYoutube = document.createElement('iframe');
+    const preloaderHTML = `<div class="${libraryClassNames.preloaderVideo}"><div></div><div></div><div></div><div></div></div>`;
+    const initialUrlYouTube = 'https://www.youtube.com/embed/';
+    const urlVideo = element.dataset.videoUrl;
+    let urlParams;
+    try {
+      const userYouTubeUrl = new URL(urlVideo);
+      const urlSearch = userYouTubeUrl.search;
+      urlParams = new URLSearchParams(urlSearch);
+    } catch (error) {
+      urlParams = new URLSearchParams('?v=');
+    }
+
+    player.classList.add(libraryClassNames.player);
+
+    iframeYoutube.classList.add(libraryClassNames.iframePlayer, libraryClassNames.iframePlayerLoading);
+    iframeYoutube.setAttribute('title', 'YouTube video player');
+    iframeYoutube.setAttribute('frameborder', '0');
+    iframeYoutube.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture');
+    iframeYoutube.setAttribute('allowfullscreen', '');
+    iframeYoutube.setAttribute('src', `${initialUrlYouTube}${urlParams.get('v')}`);
+
+    iframeYoutube.addEventListener('load', (event) => {
+      event.target.classList.remove(libraryClassNames.iframePlayerLoading);
+      document.querySelector(`.${libraryClassNames.preloaderVideo}`).remove();
+    })
+
+    player.insertAdjacentElement('beforeend', this.createPopupCloseBtn());
+    player.insertAdjacentElement('beforeend', iframeYoutube);
+    player.insertAdjacentHTML('beforeend', preloaderHTML);
+
+    return player;
+  }
+
+  static createPopupCloseBtn() {
+    const closeBtn = document.createElement('button');
+    const iconClose = document.createElement('span');
+
+    closeBtn.classList.add(libraryClassNames.close);
+    closeBtn.setAttribute('type', 'button');
+    closeBtn.setAttribute('title', 'Close popup');
+    closeBtn.setAttribute('aria-label', 'Close');
+
+    iconClose.classList.add(libraryClassNames.closeIcon);
+    closeBtn.insertAdjacentElement('beforeend', iconClose);
+
+    return closeBtn;
+  }
+
+  static createBackgroundDark() {
+    const backgroundDark = document.createElement('div');
+    backgroundDark.classList.add(libraryClassNames.backgroundDark);
+
+    return backgroundDark;
   }
 
   static eventDocumentKeyUp(event) {
     const focusElement = document.activeElement;
-    const popupBlocks = document.querySelectorAll(`.${libraryClassNames.popup}`);
+    const popup = document.querySelector(`.${libraryClassNames.popup}`);
 
-    if (!focusElement.closest(`.${libraryClassNames.popupOpen}`)) {
-      popupBlocks.forEach((block) => {
-        if (block.classList.contains(libraryClassNames.popupOpen)) {
-          block.querySelector(`.${libraryClassNames.close}`).focus();
-        }
-      });
+    if (!focusElement.closest(`.${libraryClassNames.popup}`) && Flotter.isOpenPopUp) {
+      popup.querySelector(`.${libraryClassNames.close}`).focus();
     }
 
     if ('key' in event) {
-      if (event.key === 'Escape') {
-        popupBlocks.forEach((block) => {
-          if (block.classList.contains(libraryClassNames.popupOpen)) {
-            block.classList.remove(libraryClassNames.popupOpen);
-            Flotter.isOpenPopUp = false;
-          }
-        });
+      if (event.key === 'Escape' && Flotter.isOpenPopUp) {
+        popup.remove();
+        Flotter.isOpenPopUp = false;
       }
     }
   }
@@ -161,7 +223,7 @@ export default class Flotter {
 
   static eventCheckBackground() {
     Flotter.instances.forEach((instance) => {
-      if (window.pageYOffset + (window.innerHeight / 2) > instance.offsetTop && !instance.loadBackground) {
+      if (window.pageYOffset + window.innerHeight > instance.offsetTop && !instance.loadBackground) {
         const flotterWrap = document.querySelector(`#${instance.id}`).querySelector(`.${libraryName}`);
         flotterWrap.style.backgroundImage = `url(${instance.options.backgroundImage})`;
 
@@ -201,7 +263,6 @@ export default class Flotter {
     container.setAttribute('class', libraryName);
 
     container.insertAdjacentElement('beforeend', this.popupContent);
-    container.insertAdjacentElement('beforeend', this.popup);
 
     return container;
   }
@@ -257,71 +318,9 @@ export default class Flotter {
     return button;
   }
 
-  _createPopup() {
-    const popup = document.createElement('div');
-    popup.classList.add(libraryClassNames.popup);
-
-    popup.setAttribute('aria-modal', 'true');
-    popup.setAttribute('role', 'dialog');
-
-    popup.insertAdjacentElement('beforeend', this._createBackgroundDark());
-    popup.insertAdjacentElement('beforeend', this._createPlayer());
-
-    return popup;
-  }
-
-  _createBackgroundDark() {
-    const backgroundDark = document.createElement('div');
-    backgroundDark.classList.add(libraryClassNames.backgroundDark);
-
-    return backgroundDark;
-  }
-
-  _createPlayer() {
-    const player = document.createElement('div');
-    const iframeYoutube = document.createElement('iframe');
-    const initialUrlYouTube = 'https://www.youtube.com/embed/';
-    let urlParams;
-    try {
-      const userYouTubeUrl = new URL(this.options.youtubeUrl);
-      const urlSearch = userYouTubeUrl.search;
-      urlParams = new URLSearchParams(urlSearch);
-    } catch (error) {
-      urlParams = new URLSearchParams('?v=');
-    }
-
-    player.classList.add(libraryClassNames.player);
-
-    iframeYoutube.classList.add(libraryClassNames.iframePlayer);
-    iframeYoutube.setAttribute('title', 'YouTube video player');
-    iframeYoutube.setAttribute('frameborder', '0');
-    iframeYoutube.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture');
-    iframeYoutube.setAttribute('allowfullscreen', '');
-    iframeYoutube.setAttribute('src', `${initialUrlYouTube}${urlParams.get('v')}`);
-
-    player.insertAdjacentElement('beforeend', this.closePopupBtn);
-    player.insertAdjacentElement('beforeend', iframeYoutube);
-
-    return player;
-  }
-
-  _createPopupCloseBtn() {
-    const closeBtn = document.createElement('button');
-    const iconClose = document.createElement('span');
-
-    closeBtn.classList.add(libraryClassNames.close);
-    closeBtn.setAttribute('type', 'button');
-    closeBtn.setAttribute('title', 'Close popup');
-    closeBtn.setAttribute('aria-label', 'Close');
-
-    iconClose.classList.add(libraryClassNames.closeIcon);
-    closeBtn.insertAdjacentElement('beforeend', iconClose);
-
-    return closeBtn;
-  }
-
   _insertWrapPopup() {
     this.element.setAttribute('id', this.id);
+    this.element.setAttribute('data-video-url', this.options.youtubeUrl);
     this.element.insertAdjacentElement('beforeend', this.container);
 
     this.offsetTop = this.element.getBoundingClientRect().top + document.body.scrollTop;
