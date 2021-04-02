@@ -14,37 +14,31 @@
     </style>
   </head>
   <body>
-    <div class="flotter-popup"> <button>Click destroy</button></div>
-    <div class="flotter-popup-2"></div>
-
+    <div class="popup-wrap"></div>
+    <div class="popup-wrap-2"></div>
 
     <script src="flotter.js"></script>
     <script>
       (function () {
-        const element = document.querySelector('.flotter-popup');
-        const element2 = document.querySelector('.flotter-popup-2');
-        const destroyBtn = document.querySelector('button');
+        const popup = document.querySelector('.popup-wrap');
+        const popup2 = document.querySelector('.popup-wrap-2');
 
-        destroyBtn.addEventListener('click', () => {
-          flotter.destroy(element);
-        });
-
-        flotter.init(element2, {
+        flotter.init(popup, {
           onInit: function () {
-            console.log('Init popup in', element);
-          },
-          youtubeUrl: 'https://www.youtube.com/watch?v=9nY017sy55Y',
-          backgroundImage: '/background.jpg',
-          titleText: 'Digestion is <quentin>the key</quentin> to overall wellness in Body, Mind and Spirit'
-        });
-
-        flotter.init(element, {
-          onInit: function () {
-            console.log('Init popup in', element);
+            console.log('Init popup in', popup);
           },
           youtubeUrl: 'https://www.youtube.com/watch?v=jpBJ9CUMjE8&ab_channel=DexModerr',
           backgroundImage: '/background.jpg',
           titleText: 'Digestion is <quentin>the key</quentin> to overall wellness in Body, Mind and Spirit'
+        });
+
+        flotter.init(popup2, {
+          onInit: function () {
+            console.log('Init popup in', popup2);
+          },
+          youtubeUrl: 'https://www.youtube.com/watch?v=t72nquFeCQQ',
+          backgroundImage: 'https://s3-us-west-2.amazonaws.com/s.cdpn.io/25381/tumblr_mufr0mmWYW1st5lhmo1_1280.jpg',
+          titleText: 'It is a long established fact that a reader by the readable content of a page when looking at its layout.'
         });
       })();
     </script>

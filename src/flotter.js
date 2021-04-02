@@ -1,12 +1,24 @@
 import './flotter.css';
 
 const libraryName = 'flotter';
-const contentPopupClassName = 'content-popup';
-const popupClassName = 'popup';
+const libraryClassNames = {
+  content: `${libraryName}__content`,
+  popup: `${libraryName}__popup`,
+  popupOpen: `${libraryName}__popup_open`,
+  rectangle: `${libraryName}__rectangle`,
+  title: `${libraryName}__title`,
+  quentin: `${libraryName}__title_quentin`,
+  watchNow: `${libraryName}__watch-now`,
+  backgroundDark: `${libraryName}__background_dark`,
+  player: `${libraryName}__player`,
+  iframePlayer: `${libraryName}__iframe-player`,
+  close: `${libraryName}-close`,
+  closeIcon: `${libraryName}-close__icon`
+};
 const defaultOptions = {
-  className: 'flotter-wrap',
-  youtubeUrl: null,
-  backgroundImage: null,
+  className: 'flotter',
+  youtubeUrl: '',
+  backgroundImage: '',
   titleText: ''
 };
 
@@ -86,12 +98,9 @@ export default class Flotter {
 
     if (ancestor) {
       const targetAncestor = document.querySelector(`#${ancestor.id}`);
-      const popupBlock = targetAncestor.querySelector(`.${popupClassName}`);
-      const watchNowBtnSelector = `.${contentPopupClassName}__watch-now`;
-      const closePopupBtnSelector = `.${popupClassName}-close`;
-      const popUpOpenClassName = `${popupClassName}_open`;
-      if (target.closest(watchNowBtnSelector)) {
-        popupBlock.classList.add(popUpOpenClassName);
+      const popupBlock = targetAncestor.querySelector(`.${libraryClassNames.popup}`);
+      if (target.closest(`.${libraryClassNames.watchNow}`)) {
+        popupBlock.classList.add(libraryClassNames.popupOpen);
         Flotter.windowSize = {
           y: window.pageYOffset,
           x: window.pageXOffset
@@ -99,8 +108,8 @@ export default class Flotter {
         Flotter.isOpenPopUp = true;
       }
 
-      if (target.closest(closePopupBtnSelector)) {
-        popupBlock.classList.remove(popUpOpenClassName);
+      if (target.closest(`.${libraryClassNames.close}`)) {
+        popupBlock.classList.remove(libraryClassNames.popupOpen);
         Flotter.isOpenPopUp = false;
       }
     }
@@ -108,13 +117,12 @@ export default class Flotter {
 
   static eventDocumentKeyUp(event) {
     const focusElement = document.activeElement;
-    const popupBlocks = document.querySelectorAll(`.${popupClassName}`);
-    const popUpOpenClassName = `${popupClassName}_open`;
+    const popupBlocks = document.querySelectorAll(`.${libraryClassNames.popup}`);
 
-    if (!focusElement.closest(`.${popUpOpenClassName}`)) {
+    if (!focusElement.closest(`.${libraryClassNames.popupOpen}`)) {
       popupBlocks.forEach((block) => {
-        if (block.classList.contains(popUpOpenClassName)) {
-          block.querySelector(`.${popupClassName}-close`).focus();
+        if (block.classList.contains(libraryClassNames.popupOpen)) {
+          block.querySelector(`.${libraryClassNames.close}`).focus();
         }
       });
     }
@@ -122,8 +130,8 @@ export default class Flotter {
     if ('key' in event) {
       if (event.key === 'Escape') {
         popupBlocks.forEach((block) => {
-          if (block.classList.contains(popUpOpenClassName)) {
-            block.classList.remove(popUpOpenClassName);
+          if (block.classList.contains(libraryClassNames.popupOpen)) {
+            block.classList.remove(libraryClassNames.popupOpen);
             Flotter.isOpenPopUp = false;
           }
         });
@@ -151,7 +159,7 @@ export default class Flotter {
       if (userOptions.hasOwnProperty(key)) {
         if (key === 'className') {
           let classList = userOptions[key].split(' ');
-          classList.push('flotter-wrap');
+          classList.push(this.options.className);
           opt[key] = classList.join(' ');
 
           continue;
@@ -165,7 +173,7 @@ export default class Flotter {
 
   _createContainer() {
     const container = document.createElement('div');
-    container.setAttribute('class', this.options.className);
+    container.setAttribute('class', libraryName);
     container.style.backgroundImage = `url(${this.options.backgroundImage})`;
 
     container.insertAdjacentElement('beforeend', this.popupContent);
@@ -182,7 +190,7 @@ export default class Flotter {
       this.watchNowBtn
     ];
 
-    contentPopup.setAttribute('class', contentPopupClassName);
+    contentPopup.setAttribute('class', libraryClassNames.content);
 
     childElements.forEach((element) => {
       contentPopup.insertAdjacentElement('beforeend', element);
@@ -193,18 +201,18 @@ export default class Flotter {
 
   _createRectangle() {
     const rectangle = document.createElement('div');
-    rectangle.classList.add(`${contentPopupClassName}__rectangle`);
+    rectangle.classList.add(libraryClassNames.rectangle);
 
     return rectangle;
   }
 
   _createTitle() {
     const htmlTitle = this.options.titleText
-      .replace('<quentin>', `<span class="${contentPopupClassName}__title_quentin-text">`)
+      .replace('<quentin>', `<span class="${libraryClassNames.quentin}">`)
       .replace('</quentin>', '</span>');
 
     const title = document.createElement('div');
-    title.classList.add(`${contentPopupClassName}__title`);
+    title.classList.add(libraryClassNames.title);
     title.insertAdjacentHTML('beforeend', htmlTitle);
 
     return title;
@@ -212,11 +220,11 @@ export default class Flotter {
 
   _createWatchNowBtn() {
     const svg = `
-      <svg class="${contentPopupClassName}__watch-now-icon" width="41" height="30" viewBox="0 0 41 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <svg width="41" height="30" viewBox="0 0 41 30" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path fill-rule="evenodd" clip-rule="evenodd" d="M16.4002 21.4289V8.57112L27.0514 15.0005L16.4002 21.4289ZM40.1437 4.68482C39.6715 2.84149 38.2827 1.38874 36.5183 0.89617C33.3215 0 20.5 0 20.5 0C20.5 0 7.67959 0 4.48175 0.89617C2.71728 1.38874 1.32854 2.84149 0.857324 4.68482C0 8.02647 0 15.0005 0 15.0005C0 15.0005 0 21.9735 0.857324 25.3163C1.32854 27.1596 2.71728 28.6123 4.48175 29.1049C7.67959 30 20.5 30 20.5 30C20.5 30 33.3215 30 36.5183 29.1049C38.2827 28.6123 39.6715 27.1596 40.1437 25.3163C41 21.9735 41 15.0005 41 15.0005C41 15.0005 41 8.02647 40.1437 4.68482Z" fill="#FFDF37"/>
       </svg>`;
     const button = document.createElement('button');
-    button.classList.add(`${contentPopupClassName}__watch-now`);
+    button.classList.add(libraryClassNames.watchNow);
     button.setAttribute('type', 'button');
     button.setAttribute('title', 'Open popup');
 
@@ -227,7 +235,7 @@ export default class Flotter {
 
   _createPopup() {
     const popup = document.createElement('div');
-    popup.classList.add(popupClassName);
+    popup.classList.add(libraryClassNames.popup);
 
     popup.setAttribute('aria-modal', 'true');
     popup.setAttribute('role', 'dialog');
@@ -240,7 +248,7 @@ export default class Flotter {
 
   _createBackgroundDark() {
     const backgroundDark = document.createElement('div');
-    backgroundDark.classList.add(`${popupClassName}__background_dark`);
+    backgroundDark.classList.add(libraryClassNames.backgroundDark);
 
     return backgroundDark;
   }
@@ -249,12 +257,18 @@ export default class Flotter {
     const player = document.createElement('div');
     const iframeYoutube = document.createElement('iframe');
     const initialUrlYouTube = 'https://www.youtube.com/embed/';
-    const userYouTubeUrl = new URL(this.options.youtubeUrl);
-    const urlSearch = userYouTubeUrl.search;
-    const urlParams = new URLSearchParams(urlSearch);
+    let urlParams;
+    try {
+      const userYouTubeUrl = new URL(this.options.youtubeUrl);
+      const urlSearch = userYouTubeUrl.search;
+      urlParams = new URLSearchParams(urlSearch);
+    } catch (error) {
+      urlParams = new URLSearchParams('?v=');
+    }
 
-    player.classList.add('player');
+    player.classList.add(libraryClassNames.player);
 
+    iframeYoutube.classList.add(libraryClassNames.iframePlayer);
     iframeYoutube.setAttribute('title', 'YouTube video player');
     iframeYoutube.setAttribute('frameborder', '0');
     iframeYoutube.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture');
@@ -271,12 +285,12 @@ export default class Flotter {
     const closeBtn = document.createElement('button');
     const iconClose = document.createElement('span');
 
-    closeBtn.classList.add('popup-close');
+    closeBtn.classList.add(libraryClassNames.close);
     closeBtn.setAttribute('type', 'button');
     closeBtn.setAttribute('title', 'Close popup');
     closeBtn.setAttribute('aria-label', 'Close');
 
-    iconClose.classList.add(`${popupClassName}-close__icon`);
+    iconClose.classList.add(libraryClassNames.closeIcon);
     closeBtn.insertAdjacentElement('beforeend', iconClose);
 
     return closeBtn;
