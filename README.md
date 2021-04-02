@@ -1,7 +1,7 @@
 # Flotter
 A simple JavaScript popup generator.
 
-Check out the [example](http://).
+Check out the [example](https://uolary.github.io/flotterExample/).
 
 ## Connecting
 In the `dist` folder you will find JavaScript and Css files, choose a file type convenient for you and connect to your library.
@@ -16,10 +16,10 @@ An example of connecting Css:
 
 To initialize the library, you need to call the init method and pass the element in which the HTTL code will be generated, as well as an object with settings.
 
-Example code:
+Example library initialization:
 
 ```js
-const element = document.querySelector('.flotter-popup');
+const element = document.querySelector('.popup-wrap');
 
 flotter.init(element, {
   onInit: function () {
@@ -29,6 +29,13 @@ flotter.init(element, {
   backgroundImage: '/background.jpg',
   titleText: 'Digestion is <quentin>the key</quentin> to overall wellness in Body, Mind and Spirit'
 });
+```
+
+Example of disabling the library:
+```js
+const element = document.querySelector('.popup-wrap');
+
+flotter.destroy(element);
 ```
 
 `onInit` - callback function will be called generating HTML code.
