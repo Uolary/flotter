@@ -82,19 +82,21 @@ export default class Flotter {
   }
 
   static addEvents() {
+    document.addEventListener('DOMContentLoaded', this.eventCheckBackground);
     document.addEventListener('click', this.eventDocumentClick);
-    document.addEventListener('keyup', this.eventDocumentKeyUp);
+    document.addEventListener('keyup', this.eventDocumentKeyUp, true);
+    document.addEventListener('focus', this.eventFocus, true);
     window.addEventListener('scroll', this.eventScroll);
     window.addEventListener('resize', this.eventResize);
-    document.addEventListener('DOMContentLoaded', this.eventCheckBackground);
   }
 
   static removeEvents() {
+    document.removeEventListener('DOMContentLoaded', this.eventCheckBackground);
     document.removeEventListener('click', this.eventDocumentClick);
     document.removeEventListener('keyup', this.eventDocumentKeyUp);
+    document.removeEventListener('focus', this.eventFocus);
     window.removeEventListener('scroll', this.eventScroll);
     window.removeEventListener('resize', this.eventResize);
-    document.removeEventListener('DOMContentLoaded', this.eventCheckBackground);
   }
 
   static eventDocumentClick(event) {
@@ -191,13 +193,17 @@ export default class Flotter {
     return backgroundDark;
   }
 
-  static eventDocumentKeyUp(event) {
-    const focusElement = document.activeElement;
+  static eventFocus(event) {
     const popup = document.querySelector(`.${libraryClassNames.popup}`);
 
-    if (!focusElement.closest(`.${libraryClassNames.popup}`) && Flotter.isOpenPopUp) {
+    if (Flotter.isOpenPopUp && !popup.contains(event.target)) {
+      event.stopPropagation();
       popup.querySelector(`.${libraryClassNames.close}`).focus();
     }
+  }
+
+  static eventDocumentKeyUp(event) {
+    const popup = document.querySelector(`.${libraryClassNames.popup}`);
 
     if ('key' in event) {
       if (event.key === 'Escape' && Flotter.isOpenPopUp) {
